@@ -41,7 +41,7 @@ public class EnemyMovement : MonoBehaviour
             if (idleTimer <= 0) 
             {
                 ChangeState(EnemyState.Passive);
-                rb.angularVelocity = Vector3.zero;
+                rb.linearVelocity = Vector3.zero;
             }
         }
         
@@ -54,9 +54,6 @@ public class EnemyMovement : MonoBehaviour
             {
                 ChangeState(EnemyState.Attacking);
             }
-
-
-            
 
             else if (direction > 0)
             {
