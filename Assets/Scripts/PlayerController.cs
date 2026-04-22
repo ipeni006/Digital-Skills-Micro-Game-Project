@@ -46,6 +46,7 @@ public class PlayerController : MonoBehaviour
     {
         Controller.Move(move * Time.deltaTime);
         anim.SetFloat("WalkSpeed", Mathf.Abs(move.x));
+        transform.position = new Vector3(transform.position.x, transform.position.y, 0);
 
         handleGravity();
         handleJump();
@@ -94,7 +95,7 @@ public class PlayerController : MonoBehaviour
             isJumping = false;
         }
     }
-
+    
     public void OnJump(InputValue button)
     {
         if (button.isPressed)
@@ -111,7 +112,7 @@ public class PlayerController : MonoBehaviour
 
     public void OnMove(InputValue value)
     {
-        move.x = value.Get<float>() * speed ;
+        move = new Vector3(value.Get<float>() * speed, transform.position.y, 0);
 
         Debug.Log(move.x);
     }
