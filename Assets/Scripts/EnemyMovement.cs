@@ -144,6 +144,10 @@ public class EnemyMovement : MonoBehaviour
 
     }
 
+    public void Attack()
+    {
+        Debug.Log("Attack");
+    }
 
     public enum EnemyState
     {
