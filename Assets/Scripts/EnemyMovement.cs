@@ -13,7 +13,7 @@ public class EnemyMovement : MonoBehaviour
 
     float idleTimer = 0;
 
-    private bool isChasing = false;
+    
     // Start is called once before the first execution of Update after the MonoBehaviour is created
     void Start()
     {
@@ -30,24 +30,35 @@ public class EnemyMovement : MonoBehaviour
         if (enemyState == EnemyState.Chasing)
             Chase();
 
+        else if (enemyState == EnemyState.Attacking)
+        {
+
+        }
+
         if (enemyState == EnemyState.Idle && idleTimer > 0)
         {
             idleTimer -= Time.deltaTime;
             if (idleTimer <= 0) 
             {
                 ChangeState(EnemyState.Passive);
+                rb.angularVelocity = Vector3.zero;
             }
         }
+        
 
     }
     void Chase()
     {
-
-
-
             float direction = player.transform.position.x - transform.position.x;
+            if(Vector3.Distance(transform.position, player.transform.position) < attackRange)
+            {
+                ChangeState(EnemyState.Attacking);
+            }
 
-            if (direction > 0)
+
+            
+
+            else if (direction > 0)
             {
                 rb.linearVelocity = new Vector3(speed, 0, 0);
                 Flip(1);
@@ -74,7 +85,7 @@ public class EnemyMovement : MonoBehaviour
         {
             if (player == null)
                 player = other.gameObject;
-            isChasing = true;
+            
             ChangeState(EnemyState.Chasing);
             
         }
@@ -83,8 +94,11 @@ public class EnemyMovement : MonoBehaviour
     private void OnTriggerExit(Collider other)
     {
         if (other.gameObject.tag == "Player")
-            isChasing = false;
+        {
+
+        
         ChangeState(EnemyState.Idle);
+        }
     }
 
     void ChangeState(EnemyState newState)
@@ -103,6 +117,11 @@ public class EnemyMovement : MonoBehaviour
         {
             // Set to false
         }
+        else if (enemyState == EnemyState.Attacking)
+        {
+            // Set to false
+        }
+
 
         // Update state
         enemyState = newState;
@@ -119,6 +138,10 @@ public class EnemyMovement : MonoBehaviour
         else if (enemyState == EnemyState.Chasing)
         {
             // Set to true
+        }
+        else if (enemyState == EnemyState.Attacking)
+        {
+            // Set to false
         }
 
 
