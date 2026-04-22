@@ -1,3 +1,4 @@
+using JetBrains.Annotations;
 using UnityEngine;
 using UnityEngine.InputSystem;
 using UnityEngine.UI;
@@ -9,6 +10,7 @@ public class PlayerController : MonoBehaviour
     public Vector2 move;
 
     private bool isJumping = false;
+    public bool isInteracting = false;
 
     private bool isJumpPressed = false;
 
@@ -116,4 +118,17 @@ public class PlayerController : MonoBehaviour
 
         Debug.Log(move.x);
     }
+
+    public void OnInteract(InputValue button)
+    {
+        if (button.isPressed)
+        {
+            isInteracting = true;
+        }
+        else
+        {
+            isInteracting = false;
+        }
+    }
+
 }
