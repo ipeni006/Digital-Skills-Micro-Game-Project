@@ -63,7 +63,7 @@ public class DoorTeleport : MonoBehaviour
             cc.enabled = true;
         }
         playerInRange = false;
-        Debug.Log("DOOR)");
+        Debug.Log("DOOR");
     }
 }
 
