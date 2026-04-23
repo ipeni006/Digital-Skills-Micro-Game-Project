@@ -1,6 +1,6 @@
-using UnityEditor.Experimental.GraphView;
+
 using UnityEngine;
-using UnityEngine.XR;
+
 
 public class EnemyMovement : MonoBehaviour
 {
@@ -37,6 +37,8 @@ public class EnemyMovement : MonoBehaviour
         else if (enemyState == EnemyState.Attacking)
         {
 
+            rb.linearVelocity = Vector3.zero; // ← stop moving when attacking
+   
         }
 
         if (enemyState == EnemyState.Idle && idleTimer > 0)
@@ -54,9 +56,10 @@ public class EnemyMovement : MonoBehaviour
     void Chase()
     {
             float direction = player.transform.position.x - transform.position.x;
-            if(Vector3.Distance(transform.position, player.transform.position) < attackRange)
+            if(Vector3.Distance(transform.position, player.transform.position) <= attackRange)
             {
                 ChangeState(EnemyState.Attacking);
+
             }
 
             else if (direction > 0)
@@ -81,25 +84,22 @@ public class EnemyMovement : MonoBehaviour
             transform.rotation = Quaternion.Euler(0, -90 * flipDir, 0);
     }
 
-    private void OnTriggerEnter(Collider other)
+    private void OnTriggerStay(Collider other)
     {
         if(other.gameObject.tag == "Player")
         {
             if (player == null)
                 player = other.gameObject;
             
-            ChangeState(EnemyState.Chasing);
-            
+            ChangeState(EnemyState.Chasing);     
         }
             
     }
     private void OnTriggerExit(Collider other)
     {
         if (other.gameObject.tag == "Player")
-        {
-
-        
-        ChangeState(EnemyState.Idle);
+        { 
+            ChangeState(EnemyState.Idle);
         }
     }
 
@@ -113,16 +113,17 @@ public class EnemyMovement : MonoBehaviour
         else if (enemyState == EnemyState.Idle)
         {
 
-            anim.SetBool("isActive", false);
+            anim.SetBool("isIdle", false);
         }
         else if (enemyState == EnemyState.Chasing)
         {
             // Set to false
-
+            anim.SetBool("isMoving", false);
         }
         else if (enemyState == EnemyState.Attacking)
         {
             // Set to false
+            anim.SetBool("isAttacking", false);
         }
 
 
@@ -136,28 +137,30 @@ public class EnemyMovement : MonoBehaviour
         }
         else if (enemyState == EnemyState.Idle)
         {
-            anim.SetBool("isActive", true);
+            anim.SetBool("isIdle", true);
             anim.SetFloat("speed", 0);
             idleTimer = 10f;
         }
         else if (enemyState == EnemyState.Chasing)
         {
             // Set to true
-            anim.SetBool("isActive", true);
+            anim.SetBool("isMoving", true);
         }
         else if (enemyState == EnemyState.Attacking)
         {
-            // Set to false
+            anim.SetBool("isAttacking", true);
         }
 
 
     }
 
-    public void Attack()
-    {
-        Debug.Log("Attack");
-    }
 
+    public void AttackEnd()
+    {
+        
+        Debug.Log("Attack Ended");
+        ChangeState(EnemyState.Idle);
+    }
     public enum EnemyState
     {
         Passive,
