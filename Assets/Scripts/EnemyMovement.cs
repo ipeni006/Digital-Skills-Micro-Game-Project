@@ -5,9 +5,13 @@ using UnityEngine.XR;
 public class EnemyMovement : MonoBehaviour
 {
     private Rigidbody rb;
-    public float speed = 5.0f;
+    private Animator anim;
+
+    public float speed = 10.0f;
     private GameObject player;
-    private EnemyState enemyState;
+    public EnemyState enemyState;
+    public float flipDir = 1;
+
 
     public float attackRange = 3;
 
@@ -17,9 +21,9 @@ public class EnemyMovement : MonoBehaviour
     // Start is called once before the first execution of Update after the MonoBehaviour is created
     void Start()
     {
-
-
         rb = GetComponent<Rigidbody>();
+        anim = GetComponent<Animator>();
+
         transform.rotation = Quaternion.Euler(0, 90, 0);
         ChangeState(EnemyState.Passive);
     }
@@ -66,14 +70,15 @@ public class EnemyMovement : MonoBehaviour
                 rb.linearVelocity = new Vector3(-speed, 0, 0);
                 Flip(-1);
             }
+            anim.SetFloat("speed", speed);
     }
 
     private void Flip(int direction)
     {
-        if(direction == 1)
-            transform.rotation = Quaternion.Euler(0, 90, 0);
-        else if(direction ==-1)
-            transform.rotation = Quaternion.Euler(0, -90, 0);
+        if (direction == 1)
+            transform.rotation = Quaternion.Euler(0, 90 * flipDir, 0);
+        else if (direction ==-1)
+            transform.rotation = Quaternion.Euler(0, -90 * flipDir, 0);
     }
 
     private void OnTriggerEnter(Collider other)
@@ -101,18 +106,19 @@ public class EnemyMovement : MonoBehaviour
     void ChangeState(EnemyState newState)
     {
         // Exit current animation
-        if (enemyState == EnemyState.Idle)
+        if (enemyState == EnemyState.Passive)
         {
-            // Set to false
-            idleTimer = 10f;
+            anim.SetBool("isPassive", false);
         }
         else if (enemyState == EnemyState.Idle)
         {
-            // Set to false
+
+            anim.SetBool("isActive", false);
         }
         else if (enemyState == EnemyState.Chasing)
         {
             // Set to false
+
         }
         else if (enemyState == EnemyState.Attacking)
         {
@@ -124,17 +130,20 @@ public class EnemyMovement : MonoBehaviour
         enemyState = newState;
 
         // Update the new animation
-        if (enemyState == EnemyState.Idle)
+        if (enemyState == EnemyState.Passive)
         {
-            // Set to true
+            anim.SetBool("isPassive", true);
         }
         else if (enemyState == EnemyState.Idle)
         {
-            // Set to true
+            anim.SetBool("isActive", true);
+            anim.SetFloat("speed", 0);
+            idleTimer = 10f;
         }
         else if (enemyState == EnemyState.Chasing)
         {
             // Set to true
+            anim.SetBool("isActive", true);
         }
         else if (enemyState == EnemyState.Attacking)
         {

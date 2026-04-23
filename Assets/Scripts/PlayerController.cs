@@ -88,7 +88,7 @@ public class PlayerController : MonoBehaviour
     {
         if (!isJumping && Controller.isGrounded && isJumpPressed)
         {
-            Debug.Log("JUMPINGG");
+   
             isJumping = true;
             move.y = initialJumpVelocity * .5f;
         }
@@ -116,7 +116,7 @@ public class PlayerController : MonoBehaviour
     {
         move = new Vector3(value.Get<float>() * speed, transform.position.y, 0);
 
-        Debug.Log(move.x);
+
     }
 
     public void OnInteract(InputValue button)
