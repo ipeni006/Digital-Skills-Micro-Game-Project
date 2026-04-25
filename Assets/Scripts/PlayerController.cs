@@ -1,50 +1,50 @@
-using JetBrains.Annotations;
 using System.Collections;
-using System.Runtime.CompilerServices;
 using UnityEngine;
 using UnityEngine.InputSystem;
-using UnityEngine.UI;
 
 public class PlayerController : MonoBehaviour
 {
     public float speed = 5f;
-    public float jumpForce; 
+
+    [Header("Jump Settings")]
+    public float maxJumpHeight = 1.0f;
+    public float maxJumpTime = 0.5f;
+    public float jumpBufferTime = 0.2f;
+    private float jumpBufferCounter;
+
+    [Header("Ground Check")]
+    public Transform groundCheck;
+    public float groundDistance = 0.2f;
+    public LayerMask groundMask;      
+    private bool isGrounded;          
+
     private Vector2 move;
     private float rawMoveInput;
 
     public bool isAttacking = false;
     private bool isJumping = false;
     public bool isInteracting = false;
-
-    private bool isJumpPressed = false;
-
-    private float maxJumpHeight = 2.0f;
-    private float maxJumpTime = 0.5f;
-    private float initialJumpVelocity;
-    private CharacterController Controller;
-    private PlayerCombat playerCombat;
-
-    private Vector3 knockbackVelocity = Vector3.zero;
-
-    private Animator anim;
-    Rigidbody rb;
-
     private bool isKnockedBack = false;
 
+    private float initialJumpVelocity;
+    private Vector3 knockbackVelocity = Vector3.zero;
+
+    private CharacterController Controller;
+    private PlayerCombat playerCombat;
+    private Animator anim;
+
     float gravity = -9.8f;
-    float groundedGravity = -0.05f;
-    // Start is called once before the first execution of Update after the MonoBehaviour is created
+    // Increased grounded gravity to firmly push the controller into the floor
+    float groundedGravity = -2.0f;
+
     void Start()
     {
         Controller = GetComponent<CharacterController>();
-        rb = GetComponent<Rigidbody>();
         playerCombat = GetComponent<PlayerCombat>();
         anim = GetComponent<Animator>();
 
         setupJumpVariables();
-        
         transform.rotation = Quaternion.Euler(0, 90, 0);
-
     }
 
     void setupJumpVariables()
@@ -53,35 +53,39 @@ public class PlayerController : MonoBehaviour
         gravity = (-2 * maxJumpHeight / Mathf.Pow(timeToApex, 2));
         initialJumpVelocity = (2 * maxJumpHeight) / timeToApex;
     }
-    // Update is called once per frame
+
     void Update()
     {
-        if (isKnockedBack == true)
+        // 1. Perform our custom, reliable ground check
+        isGrounded = Physics.CheckSphere(groundCheck.position, groundDistance, groundMask);
+
+        if (isKnockedBack)
         {
             knockbackVelocity.y += gravity * Time.deltaTime;
             Controller.Move(knockbackVelocity * Time.deltaTime);
-
             knockbackVelocity.x = Mathf.MoveTowards(knockbackVelocity.x, 0, 15f * Time.deltaTime);
 
-            if (Controller.isGrounded && knockbackVelocity.magnitude < 0.1f)
+            if (isGrounded && knockbackVelocity.magnitude < 0.1f)
                 isKnockedBack = false;
 
             return;
         }
 
+        if (jumpBufferCounter > 0) jumpBufferCounter -= Time.deltaTime;
+
         handleGravity();
         handleJump();
 
-
         if (isAttacking)
         {
-            move.x = 0; // Zero out horizontal input while attacking
+            move.x = 0;
             anim.SetFloat("WalkSpeed", 0);
         }
         else
         {
             move.x = rawMoveInput * speed;
             anim.SetFloat("WalkSpeed", Mathf.Abs(move.x));
+
             if (move.x < 0) transform.rotation = Quaternion.Euler(0, -90, 0);
             if (move.x > 0) transform.rotation = Quaternion.Euler(0, 90, 0);
         }
@@ -90,51 +94,38 @@ public class PlayerController : MonoBehaviour
         transform.position = new Vector3(transform.position.x, transform.position.y, 0);
     }
 
-
-
-
     void handleGravity()
     {
-        if (Controller.isGrounded)
+        // Use our custom isGrounded instead
+        if (isGrounded && move.y <= 0.0f)
         {
             move.y = groundedGravity;
+            isJumping = false;
         }
         else
         {
-            // To average falling down velocity while accounting for framerate
-            // Velocity verlet
             float oldYVelocity = move.y;
             float newYVelocity = move.y + (gravity * Time.deltaTime);
-            float nextYVelocity = (oldYVelocity + newYVelocity) * .5f;
-            move.y = nextYVelocity;
+            move.y = (oldYVelocity + newYVelocity) * 0.5f;
         }
     }
 
     private void handleJump()
     {
-        if (!isJumping && Controller.isGrounded && isJumpPressed)
+        // Use our custom isGrounded instead
+        if (isGrounded && jumpBufferCounter > 0f)
         {
-   
             isJumping = true;
-            move.y = initialJumpVelocity * .5f;
-        }
-        else if(isJumpPressed && isJumping && Controller.isGrounded)
-        {
-            isJumping = false;
+            move.y = initialJumpVelocity;
+            jumpBufferCounter = 0f;
         }
     }
-    
+
     public void OnJump(InputValue button)
     {
         if (button.isPressed)
         {
-            Debug.Log("Jump started (Button Held)");
-            isJumpPressed = true;
-        }
-        else
-        {
-            Debug.Log("Jump stopped (Button Released)");
-            isJumpPressed = false;
+            jumpBufferCounter = jumpBufferTime;
         }
     }
 

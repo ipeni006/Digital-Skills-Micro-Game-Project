@@ -6,6 +6,8 @@ public class EnemyHealth : MonoBehaviour
 
     public int health;
     public int maxHealth = 10;
+
+    public GameObject itemDrop;
     // Start is called once before the first execution of Update after the MonoBehaviour is created
     void Start()
     {
@@ -25,7 +27,12 @@ public class EnemyHealth : MonoBehaviour
         Debug.Log("Ouch");
         if (health > maxHealth) health = maxHealth;
 
-        else if (health <=  0) Destroy(gameObject);
+        else if (health <= 0)
+        {
+            itemDrop.transform.position = transform.position;
+            Destroy(gameObject);
+        }
+        
 
     }
 }

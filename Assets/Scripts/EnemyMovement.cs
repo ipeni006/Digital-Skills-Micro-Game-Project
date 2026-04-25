@@ -60,7 +60,7 @@ public class EnemyMovement : MonoBehaviour
                 if (idleTimer <= 0)
                 {
                     ChangeState(EnemyState.Passive);
-                    rb.linearVelocity = Vector3.zero;
+
                 }
             }
         }
