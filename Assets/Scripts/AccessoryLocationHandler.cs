@@ -5,7 +5,9 @@ public class AccessoryLocationHandler : MonoBehaviour
     public GameObject Sword;
     public Animator animator;
     public HumanBodyBones handBone = HumanBodyBones.RightHand;
-    private Vector3 swordOffset = new Vector3(0.0011f, 0.006f, -0.006f);
+    private Vector3 swordOffset = new Vector3(0.0011f, 0.006f, -0.013f);
+
+
     // Start is called once before the first execution of Update after the MonoBehaviour is created
     void Start()
     {
@@ -18,6 +20,6 @@ public class AccessoryLocationHandler : MonoBehaviour
     // Update is called once per frame
     void Update()
     {
-        
+
     }
 }

@@ -7,13 +7,19 @@ public class EnemyMovement : MonoBehaviour
     private Rigidbody rb;
     private Animator anim;
 
+    public float playerDetectRange = 5;
+    public Transform detectionPoint;
+    public LayerMask playerLayer;
+
+    public float attackCooldown = 2f;
     public float speed = 10.0f;
-    private GameObject player;
-    public EnemyState enemyState;
     public float flipDir = 1;
-
-
     public float attackRange = 3;
+
+    public float attackCooldownTimer;
+    
+    private Transform player;
+    public EnemyState enemyState;
 
     float idleTimer = 0;
 
@@ -31,38 +37,39 @@ public class EnemyMovement : MonoBehaviour
     // Update is called once per frame
     void Update()
     {
-        if (enemyState == EnemyState.Chasing)
-            Chase();
-
-        else if (enemyState == EnemyState.Attacking)
+        if(enemyState != EnemyState.Knockback)
         {
+            CheckForPlayer();
+            if (attackCooldownTimer > 0)
 
-            rb.linearVelocity = Vector3.zero; // ← stop moving when attacking
-   
-        }
+                attackCooldownTimer -= Time.deltaTime;
 
-        if (enemyState == EnemyState.Idle && idleTimer > 0)
-        {
-            idleTimer -= Time.deltaTime;
-            if (idleTimer <= 0) 
+            if (enemyState == EnemyState.Chasing)
+                Chase();
+
+            else if (enemyState == EnemyState.Attacking)
             {
-                ChangeState(EnemyState.Passive);
-                rb.linearVelocity = Vector3.zero;
+
+                rb.linearVelocity = Vector3.zero; // ← stop moving when attacking
+
+            }
+
+            if (enemyState == EnemyState.Idle && idleTimer > 0)
+            {
+                idleTimer -= Time.deltaTime;
+                if (idleTimer <= 0)
+                {
+                    ChangeState(EnemyState.Passive);
+                    rb.linearVelocity = Vector3.zero;
+                }
             }
         }
-        
-
     }
     void Chase()
     {
-            float direction = player.transform.position.x - transform.position.x;
-            if(Vector3.Distance(transform.position, player.transform.position) <= attackRange)
-            {
-                ChangeState(EnemyState.Attacking);
+            float direction = player.position.x - transform.position.x;
 
-            }
-
-            else if (direction > 0)
+            if (direction > 0)
             {
                 rb.linearVelocity = new Vector3(speed, 0, 0);
                 Flip(1);
@@ -84,26 +91,40 @@ public class EnemyMovement : MonoBehaviour
             transform.rotation = Quaternion.Euler(0, -90 * flipDir, 0);
     }
 
-    private void OnTriggerStay(Collider other)
+    private void CheckForPlayer()
     {
-        if(other.gameObject.tag == "Player")
+
+        Collider[] hits = Physics.OverlapSphere(detectionPoint.position, playerDetectRange, playerLayer);
+
+        if(hits.Length > 0)
         {
-            if (player == null)
-                player = other.gameObject;
+            player = hits[0].transform;
+
             
-            ChangeState(EnemyState.Chasing);     
-        }
+
+            if (Vector3.Distance(transform.position, player.position) <= attackRange && attackCooldownTimer <= 0)
+            {
+                attackCooldownTimer = attackCooldown;
+                ChangeState(EnemyState.Attacking);
+
+            }
+            else if(Vector3.Distance(transform.position, player.position) > attackRange && enemyState != EnemyState.Attacking)
+            {
+                ChangeState(EnemyState.Chasing);
+            }
+
             
-    }
-    private void OnTriggerExit(Collider other)
-    {
-        if (other.gameObject.tag == "Player")
-        { 
-            ChangeState(EnemyState.Idle);
         }
+        else
+        {
+            rb.linearVelocity = Vector3.zero;
+
+        }
+
     }
 
-    void ChangeState(EnemyState newState)
+
+    public void ChangeState(EnemyState newState)
     {
         // Exit current animation
         if (enemyState == EnemyState.Passive)
@@ -124,6 +145,10 @@ public class EnemyMovement : MonoBehaviour
         {
             // Set to false
             anim.SetBool("isAttacking", false);
+        }
+        else if (enemyState == EnemyState.Knockback)
+        {
+            anim.SetBool("isKnockedback", false);
         }
 
 
@@ -150,22 +175,32 @@ public class EnemyMovement : MonoBehaviour
         {
             anim.SetBool("isAttacking", true);
         }
+        else if (enemyState == EnemyState.Knockback)
+        {
+            anim.SetBool("isKnockedback", true);
+        }
 
 
     }
 
+    private void OnDrawGizmosSelected()
+    {
+        Gizmos.color = Color.yellow;
+        Gizmos.DrawWireSphere(detectionPoint.position, playerDetectRange);
+    }
 
     public void AttackEnd()
     {
-        
         Debug.Log("Attack Ended");
         ChangeState(EnemyState.Idle);
     }
+
     public enum EnemyState
     {
         Passive,
         Idle,
         Chasing,
         Attacking,
+        Knockback
     }
 }

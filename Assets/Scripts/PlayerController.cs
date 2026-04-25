@@ -1,4 +1,6 @@
 using JetBrains.Annotations;
+using System.Collections;
+using System.Runtime.CompilerServices;
 using UnityEngine;
 using UnityEngine.InputSystem;
 using UnityEngine.UI;
@@ -7,8 +9,10 @@ public class PlayerController : MonoBehaviour
 {
     public float speed = 5f;
     public float jumpForce; 
-    public Vector2 move;
+    private Vector2 move;
+    private float rawMoveInput;
 
+    public bool isAttacking = false;
     private bool isJumping = false;
     public bool isInteracting = false;
 
@@ -18,10 +22,14 @@ public class PlayerController : MonoBehaviour
     private float maxJumpTime = 0.5f;
     private float initialJumpVelocity;
     private CharacterController Controller;
+    private PlayerCombat playerCombat;
+
+    private Vector3 knockbackVelocity = Vector3.zero;
 
     private Animator anim;
-
     Rigidbody rb;
+
+    private bool isKnockedBack = false;
 
     float gravity = -9.8f;
     float groundedGravity = -0.05f;
@@ -30,11 +38,13 @@ public class PlayerController : MonoBehaviour
     {
         Controller = GetComponent<CharacterController>();
         rb = GetComponent<Rigidbody>();
-        setupJumpVariables();
-
+        playerCombat = GetComponent<PlayerCombat>();
         anim = GetComponent<Animator>();
 
+        setupJumpVariables();
+        
         transform.rotation = Quaternion.Euler(0, 90, 0);
+
     }
 
     void setupJumpVariables()
@@ -46,22 +56,38 @@ public class PlayerController : MonoBehaviour
     // Update is called once per frame
     void Update()
     {
-        Controller.Move(move * Time.deltaTime);
-        anim.SetFloat("WalkSpeed", Mathf.Abs(move.x));
-        transform.position = new Vector3(transform.position.x, transform.position.y, 0);
+        if (isKnockedBack == true)
+        {
+            knockbackVelocity.y += gravity * Time.deltaTime;
+            Controller.Move(knockbackVelocity * Time.deltaTime);
+
+            knockbackVelocity.x = Mathf.MoveTowards(knockbackVelocity.x, 0, 15f * Time.deltaTime);
+
+            if (Controller.isGrounded && knockbackVelocity.magnitude < 0.1f)
+                isKnockedBack = false;
+
+            return;
+        }
 
         handleGravity();
         handleJump();
 
-        if (move.x < 0)
+
+        if (isAttacking)
         {
-            transform.rotation = Quaternion.Euler(0, -90, 0);
+            move.x = 0; // Zero out horizontal input while attacking
+            anim.SetFloat("WalkSpeed", 0);
+        }
+        else
+        {
+            move.x = rawMoveInput * speed;
+            anim.SetFloat("WalkSpeed", Mathf.Abs(move.x));
+            if (move.x < 0) transform.rotation = Quaternion.Euler(0, -90, 0);
+            if (move.x > 0) transform.rotation = Quaternion.Euler(0, 90, 0);
         }
 
-        if (move.x > 0)
-        {
-            transform.rotation = Quaternion.Euler(0, 90, 0);
-        }
+        Controller.Move(new Vector3(move.x, move.y, 0) * Time.deltaTime);
+        transform.position = new Vector3(transform.position.x, transform.position.y, 0);
     }
 
 
@@ -112,13 +138,33 @@ public class PlayerController : MonoBehaviour
         }
     }
 
+
+    public void Knockback(Transform enemy, float knockbackAmount, float knockbackTime)
+    {
+        isKnockedBack = true;
+
+        isKnockedBack = true;
+        Vector3 direction = (transform.position - enemy.position).normalized;
+        knockbackVelocity = direction * knockbackAmount;
+        anim.SetFloat("WalkSpeed", Mathf.Abs(0));
+        StartCoroutine(KnockbackCounter(knockbackTime));
+    }
+    
+    IEnumerator KnockbackCounter(float knockbackTime)
+    {
+        yield return new WaitForSeconds(knockbackTime);
+        knockbackVelocity = Vector3.zero;
+        isKnockedBack = false;
+    }
     public void OnMove(InputValue value)
     {
-        move = new Vector3(value.Get<float>() * speed, transform.position.y, 0);
+        rawMoveInput = value.Get<float>();
+        if (isAttacking) return;
+
+        move.x = rawMoveInput * speed;
 
 
     }
-
     public void OnInteract(InputValue button)
     {
         if (button.isPressed)
@@ -128,6 +174,14 @@ public class PlayerController : MonoBehaviour
         else
         {
             isInteracting = false;
+        }
+    }
+
+    public void OnAttack(InputValue button)
+    {
+        if (button.isPressed)
+        {
+            playerCombat.Attack();
         }
     }
 

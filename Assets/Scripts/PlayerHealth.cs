@@ -21,7 +21,9 @@ public class PlayerHealth : MonoBehaviour
 
     public void ChangeHealth(int change)
     { 
+         
         health += change;
+        if (health > maxHealth) health = maxHealth;
         if (health <= 0)
         {
             stateManager.GameOver();
