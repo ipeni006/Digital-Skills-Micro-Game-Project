@@ -16,7 +16,7 @@ public class PlayerController : MonoBehaviour
     public Transform groundCheck;
     public float groundDistance = 0.2f;
     public LayerMask groundMask;      
-    private bool isGrounded;          
+    public bool isGrounded;          
 
     private Vector2 move;
     private float rawMoveInput;
@@ -32,6 +32,8 @@ public class PlayerController : MonoBehaviour
     private CharacterController Controller;
     private PlayerCombat playerCombat;
     private Animator anim;
+
+
 
     float gravity = -9.8f;
     // Increased grounded gravity to firmly push the controller into the floor
@@ -113,7 +115,7 @@ public class PlayerController : MonoBehaviour
     private void handleJump()
     {
         // Use our custom isGrounded instead
-        if (isGrounded && jumpBufferCounter > 0f)
+        if (isGrounded && jumpBufferCounter > 0f && !isJumping)
         {
             isJumping = true;
             move.y = initialJumpVelocity;

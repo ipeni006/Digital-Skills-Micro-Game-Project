@@ -1,4 +1,5 @@
 
+using UnityEditor.Experimental.GraphView;
 using UnityEngine;
 
 
@@ -99,10 +100,9 @@ public class EnemyMovement : MonoBehaviour
         if(hits.Length > 0)
         {
             player = hits[0].transform;
+            if (hits[0].GetComponent<PlayerController>().isInteracting == false && enemyState == EnemyState.Passive) return; 
 
-            
-
-            if (Vector3.Distance(transform.position, player.position) <= attackRange && attackCooldownTimer <= 0)
+            else if (Vector3.Distance(transform.position, player.position) <= attackRange && attackCooldownTimer <= 0)
             {
                 attackCooldownTimer = attackCooldown;
                 ChangeState(EnemyState.Attacking);

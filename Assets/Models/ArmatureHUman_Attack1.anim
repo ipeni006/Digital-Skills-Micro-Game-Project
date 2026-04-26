@@ -19191,6 +19191,13 @@ AnimationClip:
   m_HasGenericRootTransform: 0
   m_HasMotionFloatCurves: 0
   m_Events:
+  - time: 0.13333334
+    functionName: PlaySwordSlash
+    data: 
+    objectReferenceParameter: {fileID: 6748933523567095908, guid: d14ef0dceef53094dbbd9ee3ac9aa3d8, type: 3}
+    floatParameter: 0
+    intParameter: 0
+    messageOptions: 0
   - time: 0.36666667
     functionName: DoAttack
     data: 

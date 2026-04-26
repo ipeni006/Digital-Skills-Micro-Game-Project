@@ -7,6 +7,8 @@ public class PlayerCombat : MonoBehaviour
     private Animator anim;
     private PlayerController playerController;
 
+    private PlayerAudioManager playerAudioMananger;
+
     public Transform attackPoint;
     public float weaponRange = 1;
     public int damage = 1;
@@ -21,6 +23,7 @@ public class PlayerCombat : MonoBehaviour
 
     void Start()
     {
+        playerAudioMananger = GetComponent<PlayerAudioManager>();
         anim = GetComponent<Animator>();
         playerController = GetComponent<PlayerController>();
     }
@@ -38,7 +41,6 @@ public class PlayerCombat : MonoBehaviour
         {
             playerController.isAttacking = true;
             anim.SetBool("isAttacking", true);
-
  
         }
     }
@@ -50,7 +52,7 @@ public class PlayerCombat : MonoBehaviour
         Debug.Log(enemies.Length);
         if (enemies.Length > 0)
         {
-
+            playerAudioMananger.PlaySwordHit();
             enemies[0].GetComponent<EnemyHealth>().ChangeHealth(-damage);
             enemies[0].GetComponent<EnemyKnockback>().Knockback(transform, knockbackForce, stunTime);
         }
