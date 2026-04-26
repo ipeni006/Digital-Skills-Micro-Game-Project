@@ -2,7 +2,8 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.Rendering.Universal;
-
+using UnityEngine.SceneManagement;
+using UnityEngine.UI;
 public class PlayerHealth : MonoBehaviour
 {
     private GameStateManager stateManager;
@@ -14,12 +15,18 @@ public class PlayerHealth : MonoBehaviour
     private Color[] originalColors;
     private Renderer[] rends;
 
+    public Slider healthSlider;
+
     [Header("Health Settings")]
     public int maxHealth = 10;
     public int health;
     void Start()
     {
         stateManager = GetComponent<GameStateManager>();
+
+        health = maxHealth;
+        healthSlider.maxValue = maxHealth;
+        healthSlider.value = health;
 
         // Only keep renderers that have a valid material
         List<Renderer> validRends = new List<Renderer>();
@@ -30,7 +37,7 @@ public class PlayerHealth : MonoBehaviour
         }
         rends = validRends.ToArray();
 
-        health = maxHealth;
+        
 
         originalColors = new Color[rends.Length];
         for (int i = 0; i < rends.Length; i++)
@@ -52,13 +59,16 @@ public class PlayerHealth : MonoBehaviour
         if (health > maxHealth) health = maxHealth;
         if (health <= 0)
         {
-            stateManager.GameOver();
+            //stateManager.GameOver();
+            SceneManager.LoadSceneAsync(SceneManager.GetActiveScene().buildIndex);
         }
         if (change < 0)
         {
             StartCoroutine(DoFlash());
         }
-          
+        healthSlider.maxValue = maxHealth;
+        healthSlider.value = health;
+
     }
     private IEnumerator DoFlash()
     {

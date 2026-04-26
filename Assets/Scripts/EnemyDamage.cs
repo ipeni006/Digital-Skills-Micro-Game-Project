@@ -4,7 +4,7 @@ public class EnemyDamage : MonoBehaviour
 {
 
     private Animator anim;
-
+    private EnemySoundManager soundManager;
     public int damage = 1;
     public float attackKnockback = 5;
     public float stunTime = 0.5f;
@@ -19,6 +19,7 @@ public class EnemyDamage : MonoBehaviour
     private void Start()
     {
         smr = GetComponentInChildren<SkinnedMeshRenderer>();
+        soundManager = GetComponent<EnemySoundManager>();
     }
 
     // Update is called once per frame
@@ -32,7 +33,7 @@ public class EnemyDamage : MonoBehaviour
         {
             hits[0].GetComponent<PlayerHealth>().ChangeHealth(-damage);
             hits[0].GetComponent<PlayerController>().Knockback(transform, attackKnockback, stunTime);
-
+            soundManager.PlayThwack();
         }
     }
 }

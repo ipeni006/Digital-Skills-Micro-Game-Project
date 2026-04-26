@@ -72,13 +72,13 @@ public class EnemyMovement : MonoBehaviour
 
             if (direction > 0)
             {
-                rb.linearVelocity = new Vector3(speed, 0, 0);
+                rb.linearVelocity = new Vector3(speed, rb.linearVelocity.y, 0);
                 Flip(1);
             }
 
             else if (direction < 0)
             {
-                rb.linearVelocity = new Vector3(-speed, 0, 0);
+                rb.linearVelocity = new Vector3(-speed, rb.linearVelocity.y, 0);
                 Flip(-1);
             }
             anim.SetFloat("speed", speed);
@@ -106,19 +106,15 @@ public class EnemyMovement : MonoBehaviour
             {
                 attackCooldownTimer = attackCooldown;
                 ChangeState(EnemyState.Attacking);
-
             }
             else if(Vector3.Distance(transform.position, player.position) > attackRange && enemyState != EnemyState.Attacking)
             {
                 ChangeState(EnemyState.Chasing);
             }
-
-            
         }
         else
         {
-            rb.linearVelocity = Vector3.zero;
-
+            rb.linearVelocity = new Vector3(0, rb.linearVelocity.y, 0);
         }
 
     }

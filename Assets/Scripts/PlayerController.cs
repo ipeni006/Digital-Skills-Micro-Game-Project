@@ -1,6 +1,7 @@
 using System.Collections;
 using UnityEngine;
 using UnityEngine.InputSystem;
+using UnityEngine.SceneManagement;
 
 public class PlayerController : MonoBehaviour
 {
@@ -178,4 +179,12 @@ public class PlayerController : MonoBehaviour
         }
     }
 
+    public void OnMainMenu(InputValue button)
+    {
+        if(button.isPressed)
+        {
+            SceneManager.LoadSceneAsync(0);
+            Debug.Log("Loaded scene");
+        }
+    }
 }
